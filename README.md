@@ -1,7 +1,7 @@
 # template microtags component
 
 A template for web components built on
-[microtags](https://github.com/nicholasgasior/microtags).
+[microtags](https://github.com/substrate-system/microtags).
 
 ## see also
 
@@ -157,8 +157,8 @@ cool-example:not(:defined) {
 }
 ```
 
-`example/` demonstrates the page-level pattern: a `reduce-fouce` class
+The `example/` page demonstrates this: a `reduce-fouce` class
 on `<html>`, removed once `customElements.whenDefined` resolves for
-every component on the page. Two safeguards are required, not optional
--- a `Promise.race` timeout, and a `<noscript>` override. Without them,
-a component that never defines leaves the page permanently blank.
+every component on the page. Note the `Promise.race` timeout
+and a `<noscript>` override. Without them, a component that never defines
+leaves the page permanently blank.
