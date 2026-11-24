@@ -5,6 +5,10 @@ test/*.js
 dist
 .env
 public
-docs
+docs/*
+!docs/GLOSSARY.md
+!docs/adr/
+!docs/agents/
 .claude
 .agents
+WIP.md

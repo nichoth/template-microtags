@@ -28,6 +28,7 @@ npm i -S {{package-name}}
 ## Example
 
 ```ts
+import '{{package-name}}'
 ```
 
 ## API
@@ -45,14 +46,49 @@ import '{{package-name}}'
 require('{{package-name}}')
 ```
 
-### Attributes
+### Props
 
-`<all attributes here>`
+#### `example`
+
+A string prop. Attribute changes flow into the prop signal; prop writes
+do not go back to the attribute.
 
 ### Events
 
-`<all events here>`
+#### `{{component-name}}:click`
 
+Fired when the host element is clicked. Listen with:
+
+```ts
+import { Example } from '{{package-name}}'
+
+el.addEventListener(Example.TAG + ':click', ev => {
+    // ...
+})
+```
+
+## Server rendering
+
+Import `microtags/render-support` once, then call `Example.render()`:
+
+```ts
+import 'microtags/render-support'
+import { Example } from '{{package-name}}'
+
+const html = Example.render({ example: 'hello' })
+```
+
+The returned string is host markup that takes on its behavior in the
+browser without being re-rendered.
+
+Pass children as a string via the options object:
+
+```ts
+const html = Example.render(
+    { example: 'hello' },
+    { children: '<span>extra content</span>' }
+)
+```
 
 ## CSS
 
@@ -73,6 +109,44 @@ import '{{package-name}}/min/css'
 {{component-name}} {
     --example: pink;
 }
+```
+
+### Avoid a flash of undefined content
+
+The stylesheet hides `{{component-name}}` until the browser has defined
+it, so you do not see unstyled markup while the JS loads.
+
+That only covers this one element. If your page uses several custom
+elements, hide the whole page until they are all ready, and reveal it
+once:
+
+```html
+<html class="reduce-fouce">
+```
+
+```css
+html.reduce-fouce { opacity: 0; }
+```
+
+```js
+await Promise.race([
+    Promise.allSettled([
+        customElements.whenDefined('{{component-name}}')
+    ]),
+    // reveal anyway after two seconds
+    new Promise(resolve => { setTimeout(resolve, 2000) })
+])
+
+document.documentElement.classList.remove('reduce-fouce')
+```
+
+Keep the timeout, and add a `<noscript>` override. Without both, a
+component that fails to define leaves the page blank:
+
+```html
+<noscript>
+    <style>html.reduce-fouce { opacity: 1 !important; }</style>
+</noscript>
 ```
 
 ## Use
@@ -99,7 +173,7 @@ accessible to your web server, then link to them in HTML.
 #### copy
 ```sh
 cp ./node_modules/{{package-name}}/dist/index.min.js ./public/{{component-name}}.min.js
-cp ./node_modules/{{package-name}}/dist/style.min.css ./public/{{component-name}}.css
+cp ./node_modules/{{package-name}}/dist/index.min.css ./public/{{component-name}}.css
 ```
 
 #### HTML

@@ -1,97 +1,69 @@
-import { define } from '@substrate-system/web-component/util'
-import Debug from '@substrate-system/debug'
-const debug = Debug('{{component-name}}')
+import {
+    define,
+    type StaticRenderFn,
+    type StaticRenderPartsFn,
+} from 'microtags'
 
-// for docuement.querySelector
-declare global {
-    interface HTMLElementTagNameMap {
-        '{{component-name}}': Example
-    }
+const _esc:Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
 }
 
-export class Example extends HTMLElement {
-    // Define the attributes to observe
-    // need this for `attributeChangedCallback`
-    static observedAttributes = ['example']
+function escapeHtml (s:string):string {
+    return s.replace(/[&<>"']/g, c => _esc[c])
+}
 
-    example:string|null
+interface ExampleClass {
+    new ():HTMLElement
+    readonly TAG:string
+    readonly refs:{ readonly display:string }
+    readonly props:readonly string[]
+    readonly render:StaticRenderFn<{
+        example:{ (raw:string | null):string }
+    }>
+    readonly renderParts:StaticRenderPartsFn<{
+        example:{ (raw:string | null):string }
+    }>
+}
 
-    constructor () {
-        super()
-        const example = this.getAttribute('example')
-        this.example = example
-
-        this.innerHTML = `<div>
-            <p>example</p>
-            <ul>
-                ${Array.from(this.children).filter(Boolean).map(node => {
-                    return `<li>${node.outerHTML}</li>`
-                }).join('')}
-            </ul>
-        </div>`
-    }
-
-    /**
-     * Handle 'example' attribute changes
-     * @see {@link https://gomakethings.com/how-to-detect-when-attributes-change-on-a-web-component/#organizing-your-code Go Make Things article}
-     *
-     * @param  {string} oldValue The old attribute value
-     * @param  {string} newValue The new attribute value
-     */
-    handleChange_example (oldValue:string, newValue:string) {
-        debug('handling example change', oldValue, newValue)
-
-        if (newValue === null) {
-            // [example] was removed
-        } else {
-            // set [example] attribute
-        }
-    }
-
-    /**
-     * Runs when the value of an attribute is changed
-     *
-     * @param  {string} name     The attribute name
-     * @param  {string} oldValue The old attribute value
-     * @param  {string} newValue The new attribute value
-     */
-    attributeChangedCallback (name:string, oldValue:string, newValue:string) {
-        debug('an attribute changed', name)
-        const handler = this[`handleChange_${name}`];
-        (handler && handler(oldValue, newValue))
-        this.render()
-    }
-
-    disconnectedCallback () {
-        debug('disconnected')
-    }
-
-    connectedCallback () {
-        debug('connected')
-
-        const observer = new MutationObserver(function (mutations) {
-            mutations.forEach((mutation) => {
-                if (mutation.addedNodes.length) {
-                    debug('Node added: ', mutation.addedNodes)
+export const Example:ExampleClass =
+    define('{{component-name}}')
+        .withProps(p => ({
+            example: p.string(),
+        }))
+        .withRefs(r => ({
+            display: r.one(),
+        }))
+        .render(({ props, refs }) => {
+            const val = props.example ?? ''
+            return `<p data-ref="${refs.display}">`
+                + `${escapeHtml(val)}</p>`
+        }, { client: true })
+        .setup(ctx => {
+            ctx.effect(() => {
+                const val = ctx.props.example()
+                if (ctx.refs.display) {
+                    ctx.refs.display.textContent =
+                        val ?? ''
                 }
             })
-        })
 
-        observer.observe(this, { childList: true })
+            ctx.host.addEventListener('click', () => {
+                ctx.emit(Example.TAG + ':click')
+            })
+        }) as unknown as ExampleClass
 
-        this.render()
+declare global {
+    interface HTMLElementTagNameMap {
+        '{{component-name}}':InstanceType<
+            typeof Example
+        >
     }
 
-    render () {
-        this.innerHTML = `<div>
-            <p>example</p>
-            <ul>
-                ${Array.from(this.children).filter(Boolean).map(node => {
-                    return `<li>${node.outerHTML}</li>`
-                }).join('')}
-            </ul>
-        </div>`
+    interface HTMLElementEventMap {
+        '{{component-name}}:click':CustomEvent
     }
 }
-
-define('{{component-name}}', Example)

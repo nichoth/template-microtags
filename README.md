@@ -1,6 +1,7 @@
-# template web component
+# template microtags component
 
-A template for vanilla web components.
+A template for web components built on
+[microtags](https://github.com/nicholasgasior/microtags).
 
 ## see also
 
@@ -30,11 +31,7 @@ __The CLI prompts for several variables__
 
 2. Edit the source code in `src/index.ts`.
 
-3. Delete either `.github/workflows/gh-pages-docs.yml` or
-   `.github/workflows/gh-pages.yml`, depending on whether you want to deploy an
-   example or docs to github pages.
-
-4. __Edit things__
+3. __Edit things__
     * edit the [build-example](https://github.com/nichoth/template-web-component/blob/c580636f1c912fe2633f7c2478f28b11729c9b80/package.json#L20)
       command in `package.json` so that it has the right path for github pages
 
@@ -51,30 +48,117 @@ __The CLI prompts for several variables__
   changelog
 * `postversion` npm hook -- `git push --follow-tags && npm publish`
 * eslint -- `npm run lint`
-* tests run in a browser environment via `tape-run` -- see
-  [`npm test`](./package.json#L12). Includes `tap` testing
-  tools -- [tapzero](https://github.com/bicycle-codes/tapzero)
-  and [tap-spec](https://www.npmjs.com/package/tap-spec)
+* tests run in a real browser via
+  [tapout](https://github.com/substrate-system/tapout) -- see
+  [`npm test`](./package.json#L12). Assertions come from
+  [tapzero](https://github.com/bicycle-codes/tapzero). The test bundle
+  needs `--bundle`, or bare module specifiers will not resolve in the
+  browser.
 * CI via github actions
 * [stylelint](https://stylelint.io/) -- see
   [preversion npm hook](https://github.com/nichoth/template-web-component/blob/main/package.json#L25)
 
 ## the component
 
-See
-*[Web Component lifecycle methods](https://gomakethings.com/the-web-component-lifecycle-methods/)*.
+The component is built with the
+[microtags](https://github.com/nicholasgasior/microtags)
+`define` builder chain, which supplies signal-backed props, typed refs,
+and server rendering to an HTML string. The conventions are recorded as
+[architecture decision records](./docs/adr/INDEX.md); the vocabulary is
+in [the glossary](./docs/GLOSSARY.md).
 
-### [attributeChangedCallback](https://gomakethings.com/how-to-detect-when-attributes-change-on-a-web-component/#the-attributechangedcallback-method)
+### props
 
-> runs whenever an attribute on the Web Component is added, removed,
-> or changes in value.
+Declare props through the builder's `withProps` call. Attribute changes
+flow into the prop signal; prop writes do not go back to the attribute:
 
-> For performance reasons, the attributeChangedCallback() method only watches
-> and reacts to attributes you tell it to. To do that, you create a
-> `static` `observedAttributes` property, with an array of attributes to
-> watch as its value.
+```ts
+.withProps(p => ({
+    example: p.string(),
+}))
+```
 
-> You can use any attributes you’d like, including non-standard ones.
+React to prop changes with an effect in `setup`:
 
+```ts
+.setup(ctx => {
+    ctx.effect(() => {
+        const val = ctx.props.example()
+        if (ctx.refs.display) {
+            ctx.refs.display.textContent = val ?? ''
+        }
+    })
+})
+```
 
-### [disconnectedCallback](https://gomakethings.com/the-web-component-lifecycle-methods/#the-connectedcallback-and-disconnectedcallback-methods)
+See [ADR-004](./docs/adr/ADR-004-attributes-as-state.md).
+
+### events
+
+Emit tag-prefixed events with `ctx.emit`, and build the event name from
+the static `TAG`:
+
+```ts
+ctx.emit(Example.TAG + ':click')
+```
+
+```ts
+el.addEventListener(Example.TAG + ':click', ev => { /* ... */ })
+```
+
+See [ADR-005](./docs/adr/ADR-005-namespaced-events.md).
+
+### rendering
+
+The `render` function produces the host's inner markup from props. It is
+kept in the client bundle with `{ client: true }`, so an empty host
+renders in the browser and the same function renders on the server.
+
+Attribute changes update the DOM reactively through the effect, not by
+re-rendering.
+
+### server rendering
+
+Import `microtags/render-support` once, then call `Example.render()`:
+
+```ts
+import 'microtags/render-support'
+import { Example } from 'your-package'
+
+const html = Example.render({ example: 'hello' })
+// -> <your-tag example="hello"><p data-ref="display">hello</p></your-tag>
+```
+
+The resulting markup takes on its behavior in the browser without being
+re-rendered. See [ADR-011](./docs/adr/ADR-011-server-rendering.md).
+
+Pass children as a string via the options object:
+
+```ts
+const html = Example.render(
+    { example: 'hello' },
+    { children: '<span>extra content</span>' }
+)
+```
+
+### FOUCE
+
+A custom element is inert markup until its JS defines it, which shows up
+as a flash of undefined custom element. This template handles it in two
+layers, described in
+[ADR-006](./docs/adr/ADR-006-fouce-mitigation.md).
+
+`src/index.css` hides the element until it is defined. This ships with
+the component:
+
+```css
+cool-example:not(:defined) {
+    display: none;
+}
+```
+
+`example/` demonstrates the page-level pattern: a `reduce-fouce` class
+on `<html>`, removed once `customElements.whenDefined` resolves for
+every component on the page. Two safeguards are required, not optional
+-- a `Promise.race` timeout, and a `<noscript>` override. Without them,
+a component that never defines leaves the page permanently blank.
