@@ -44,7 +44,7 @@
     }
   },
   "dependencies": {
-    "microtags": "^0.1.4"
+    "microtags": "^0.1.5"
   },
   "devDependencies": {
     "@inquirer/prompts": "^8.3.0",
@@ -75,8 +75,8 @@
   "author": "nichoth <nichoth@nichoth.com> (https://nichoth.com)",
   "license": "SEE LICENSE IN LICENSE",
   "allowScripts": {
-    "esbuild@0.28.2": true,
-    "lightningcss-cli@1.33.0": true,
-    "fsevents@2.3.3": true
+    "fsevents@2.3.3": true,
+    "esbuild": true,
+    "lightningcss-cli": true
   }
 }
