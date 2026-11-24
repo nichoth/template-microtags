@@ -24,20 +24,20 @@ const exampleFilePaths = await globby(path.resolve(__dirname, "..", "example", "
 const exampleFiles = await Promise.all(exampleFilePaths.map(async (filepath) => {
   return "" + await fs.readFile(filepath);
 }));
-exampleFiles.forEach(async (fileContent, i) => {
+await Promise.all(exampleFiles.map((fileContent, i) => {
   const template = Handlebars.compile(fileContent);
-  await fs.writeFile(exampleFilePaths[i], template(templateParams));
-});
+  return fs.writeFile(exampleFilePaths[i], template(templateParams));
+}));
 const srcFilePaths = await globby(path.resolve(__dirname, "..", "src", "*"));
 const srcFiles = await Promise.all(
   srcFilePaths.map(async (filepath) => {
     return "" + await fs.readFile(filepath);
   })
 );
-srcFiles.forEach(async (fileContent, i) => {
+await Promise.all(srcFiles.map((fileContent, i) => {
   const template = Handlebars.compile(fileContent);
-  await fs.writeFile(srcFilePaths[i], template(templateParams));
-});
+  return fs.writeFile(srcFilePaths[i], template(templateParams));
+}));
 const testFilePath = path.resolve(__dirname, "..", "test", "index.ts");
 const testFile = "" + await fs.readFile(testFilePath);
 const testTemplate = Handlebars.compile(testFile);

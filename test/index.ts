@@ -1,5 +1,6 @@
 import { test } from '@substrate-system/tapzero'
 import { waitFor, qsa } from '@substrate-system/dom'
+import { define } from 'microtags'
 import 'microtags/render-support'
 import { Example } from '../src/index.js'
 
@@ -55,14 +56,22 @@ test('click fires tag-prefixed event', async t => {
     t.ok(fired, 'should fire ' + eventName + ' event')
 })
 
-test('importing a second time does not throw', async t => {
+test('registering the same tag again does not throw', t => {
+    // Simulates a second copy of this module, e.g. duplicate
+    // versions in a dependency tree. See ADR-002.
+    const first = customElements.get(Example.TAG)
     let threw = false
     try {
-        await import('../src/index.js')
+        define(Example.TAG).setup(() => {})
     } catch {
         threw = true
     }
-    t.ok(!threw, 'second import should not throw')
+    t.ok(!threw, 'second registration should not throw')
+    t.equal(
+        customElements.get(Example.TAG),
+        first,
+        'the first registration should win'
+    )
 })
 
 test(

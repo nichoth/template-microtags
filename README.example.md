@@ -2,7 +2,7 @@
 ![tests](https://github.com/{{gh-namespace}}/{{repo-name}}/actions/workflows/nodejs.yml/badge.svg)
 [![types](https://img.shields.io/npm/types/{{package-name}}?style=flat-square)](README.md)
 [![module](https://img.shields.io/badge/module-ESM%2FCJS-blue?style=flat-square)](README.md)
-[![install size](https://flat.badgen.net/packagephobia/install/@{{gh-namespace}}/{{repo-name}}?cache-control=no-cache)](https://packagephobia.com/result?p=@{{gh-namespace}}/{{repo-name}})
+[![install size](https://flat.badgen.net/packagephobia/install/{{package-name}}?cache-control=no-cache)](https://packagephobia.com/result?p={{package-name}})
 [![GZip size](https://flat.badgen.net/bundlephobia/minzip/{{package-name}})](https://bundlephobia.com/package/{{package-name}})
 [![semantic versioning](https://img.shields.io/badge/semver-2.0.0-blue?logo=semver&style=flat-square)](https://semver.org/)
 [![Common Changelog](https://nichoth.github.io/badge/common-changelog.svg)](./CHANGELOG.md)
@@ -103,11 +103,13 @@ Or minified:
 import '{{package-name}}/min/css'
 ```
 
-### Customize CSS via some variables
+### Customize CSS
+
+Override the default styles by targeting the element:
 
 ```css
 {{component-name}} {
-    --example: pink;
+    background-color: pink;
 }
 ```
 

@@ -32,8 +32,9 @@ __The CLI prompts for several variables__
 2. Edit the source code in `src/index.ts`.
 
 3. __Edit things__
-    * edit the [build-example](https://github.com/nichoth/template-web-component/blob/c580636f1c912fe2633f7c2478f28b11729c9b80/package.json#L20)
-      command in `package.json` so that it has the right path for github pages
+    * check the [build-example](./package.json#L20) command in
+      `package.json`. The CLI sets `--base` to `/<repo-name>`, the
+      default github pages path. Change it if you deploy somewhere else.
 
 ## featuring
 
@@ -41,7 +42,7 @@ __The CLI prompts for several variables__
 * ignore `dist` and `*.js` in git, but don't ignore them in npm. That way we
   don't commit any compiled code to git, but it is available to consumers.
 * use npm's `prepublishOnly` hook to compile the code before publishing to npm.
-* use [exports](./package.json#L41) field in `package.json` to make sure the
+* use [exports](./package.json#L31) field in `package.json` to make sure the
   right format is used by consumers.
 * `preversion` npm hook -- lint
 * `version` npm hook -- generate a TOC for the README, and create and add a
@@ -50,18 +51,18 @@ __The CLI prompts for several variables__
 * eslint -- `npm run lint`
 * tests run in a real browser via
   [tapout](https://github.com/substrate-system/tapout) -- see
-  [`npm test`](./package.json#L12). Assertions come from
-  [tapzero](https://github.com/bicycle-codes/tapzero). The test bundle
+  [`npm test`](./package.json#L14). Assertions come from
+  [tapzero](https://github.com/substrate-system/tapzero). The test bundle
   needs `--bundle`, or bare module specifiers will not resolve in the
   browser.
 * CI via github actions
 * [stylelint](https://stylelint.io/) -- see
-  [preversion npm hook](https://github.com/nichoth/template-web-component/blob/main/package.json#L25)
+  [preversion npm hook](./package.json#L26)
 
 ## the component
 
 The component is built with the
-[microtags](https://github.com/nicholasgasior/microtags)
+[microtags](https://github.com/substrate-system/microtags)
 `define` builder chain, which supplies signal-backed props, typed refs,
 and server rendering to an HTML string. The conventions are recorded as
 [architecture decision records](./docs/adr/INDEX.md); the vocabulary is
@@ -91,7 +92,7 @@ React to prop changes with an effect in `setup`:
 })
 ```
 
-See [ADR-004](./docs/adr/ADR-004-attributes-as-state.md).
+See [ADR-004](./docs/adr/ADR-004-one-way-attribute-to-prop.md).
 
 ### events
 
