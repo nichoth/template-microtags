@@ -1,5 +1,5 @@
 import { test } from '@substrate-system/tapzero'
-import { waitFor } from '@substrate-system/dom'
+import { waitFor, qsa } from '@substrate-system/dom'
 import 'microtags/render-support'
 import { Example } from '../src/index.js'
 
@@ -9,7 +9,7 @@ test('empty host renders from attribute', async t => {
         '<{{component-name}} example="hello"></{{component-name}}>'
     )
 
-    const el = await waitFor('{{component-name}}')
+    const el = (await waitFor('{{component-name}}'))!
     t.ok(el, 'should find the element')
 
     const ref = el.querySelector('[data-ref]')
@@ -99,7 +99,7 @@ test(
     'hydrated element responds to attributes and clicks',
     async t => {
         const tag = Example.TAG
-        const els = document.querySelectorAll(tag)
+        const els:NodeListOf<HTMLElement> = qsa(tag)
         const el = els[els.length - 1]
         t.ok(el, 'server-rendered element exists')
 
